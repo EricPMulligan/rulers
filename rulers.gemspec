@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
   spec.email         = ['eric.pierre.mulligan@gmail.com']
 
   spec.summary       = %q{A Rack-based Web Framework}
-  spec.description   = %q{A Rack-based Web Framework}
-  spec.homepage      = ''
+  spec.description   = %q{A Rack-based Web Framework,}
+  spec.homepage      = 'http://localhost:5000'
   spec.license       = 'MIT'
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
