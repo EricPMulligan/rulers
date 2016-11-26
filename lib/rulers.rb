@@ -2,6 +2,7 @@ require 'rulers/version'
 require 'rulers/routing'
 require 'rulers/util'
 require 'rulers/dependencies'
+require 'rulers/controller'
 
 module Rulers
   class Application
@@ -10,10 +11,6 @@ module Rulers
         return [404,
                 { 'Content-Type' => 'text/html' }, []]
       elsif env['PATH_INFO'] == '/'
-        # File.open(File.join(File.dirname(__FILE__), '..', 'public', 'index.html'), 'r') do |file|
-        #   return [200, { 'Context-Type' => 'text/html' }, [file.read]]
-        # end
-        # return [302, { 'Location' => '/quotes/a_quote', 'Content-Type' => 'text/html' }, ['Moved Permanently']]
         controller = HomeController.new(env)
         text = controller.send('index')
         return [200, { 'Content-Type' => 'text/html' }, [text]]
@@ -24,26 +21,11 @@ module Rulers
         controller = klass.new(env)
         text = controller.send(act)
         [200, { 'Content-Type' => 'text/html' }, [text]]
-      rescue
+      rescue StandardError => e
         text = '<p>An error occurred.</p>'
+        text += "<p>#{e.message}</p>"
         [400, { 'Content-Type' => 'text/html' }, [text]]
       end
-    end
-  end
-
-  class Controller
-    def initialize(env)
-      @env = env
-    end
-
-    def env
-      @env
-    end
-  end
-
-  class HomeController < Controller
-    def index
-      'Hello from index.'
     end
   end
 end
