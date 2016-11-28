@@ -8,6 +8,22 @@ module Rulers
 
     def initialize(env)
       @env = env
+      @routing_param = {}
+    end
+
+    def dispatch(action, routing_params = {})
+      @routing_params = routing_params
+      text = self.send(action)
+      r = get_response
+      if r
+        [r.status, r.headers, [r.body].flatten]
+      else
+        [200, { 'Content-Type' => 'text/html' }, [text].flatten]
+      end
+    end
+
+    def self.action(act, rp = {})
+      proc { |e| self.new(e).dispatch(act, rp) }
     end
 
     def controller_name
@@ -20,28 +36,27 @@ module Rulers
       @env
     end
 
-    def get_response(action)
-      render(action) unless @response
+    def get_response
       @response
     end
 
     def params
-      request.params
+      request.params.merge @routing_params
     end
 
     def request
-      @_request ||= Rack::Request.new @env
+      @request ||= Rack::Request.new @env
     end
 
-    def render(*args)
-      action, locals = args
-      locals = {} unless locals
-      filename = File.join 'app', 'views', controller_name, "#{action}.html.erb"
+    def render(view_name, locals = {})
+      filename = File.join 'app', 'views', controller_name, "#{view_name}.html.erb"
       template = File.read filename
       eruby = Erubis::Eruby.new(template)
-      self.instance_variables.each { |variable| locals[variable] = self.instance_variable_get variable }
-      text = eruby.result locals
-      response(text)
+      eruby.result locals.merge(env: @env)
+    end
+
+    def render_response(*args)
+      response(render(*args))
     end
 
     def response(text, status = 200, headers = {})
